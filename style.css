@@ -1,0 +1,101 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    overflow: hidden; /* Zapobiega przewijaniu tła */
+}
+
+.phone-screen {
+    width: 350px;   
+    height: 667px;  
+    background-color: #ffffff;
+    border: 10px solid #111; /* Ramka telefonu */
+    border-radius: 40px;     /* Zaokrąglone rogi */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden; /* Ukrywa elementy wystające poza ekran */
+    display: flex;
+    flex-direction: column;
+}
+
+.status-bar {
+    height: 30px; /* Wysokość paska statusu */
+    background-color: #f8f8f8; /* Jasny kolor tła paska */
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px; /* Odstępy wewnątrz paska */
+    font-size: 0.8em;
+    font-weight: 500;
+    z-index: 10; /* Pasek statusu zawsze na wierzchu */
+    box-sizing: border-box; /* Padding wliczony w wysokość */
+    position: absolute; /* Utrzymanie na górze, nawet jeśli content się przewija */
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.status-bar .time {
+    font-weight: 600;
+}
+
+.status-bar .icons {
+    letter-spacing: 3px;
+}
+
+.content {
+    flex-grow: 1; /* Zajmuje pozostałą przestrzeń */
+    position: relative; /* Dla pozycjonowania absolutnego #info */
+    margin-top: 30px; /* Zostawia miejsce na status-bar */
+    margin-bottom: 20px; /* Zostawia miejsce na home-indicator */
+    background-color: #e8e8e8; /* Tło pod mapą na wypadek opóźnienia */
+}
+
+.home-indicator {
+    height: 5px;
+    width: 135px;
+    background-color: #aaa; /* Szary wskaźnik */
+    border-radius: 2.5px;
+    position: absolute;
+    bottom: 8px; /* Odstęp od dołu */
+    left: 50%;
+    transform: translateX(-50%); /* Wycentrowanie */
+    z-index: 10;
+}
+
+/* Styl dla markera użytkownika */
+.user-marker-icon {
+    background-color: #007aff; /* Niebieski kolor */
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    width: 12px !important;
+    height: 12px !important;
+    margin-left: -6px !important; /* Centrowanie */
+    margin-top: -6px !important; /* Centrowanie */
+}
+
+/* Animacja pulsowania dla markera użytkownika */
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.5); opacity: 0.4; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
+.pulsing-marker {
+    border-radius: 50%;
+    border: 10px solid rgba(0, 122, 255, 0.5); /* Przezroczysty niebieski */
+    box-sizing: border-box;
+    position: absolute;
+    width: 40px !important; /* Rozmiar pulsującego okręgu */
+    height: 40px !important;
+    margin-left: -20px !important; /* Centrowanie */
+    margin-top: -20px !important; /* Centrowanie */
+    animation: pulse 1.5s infinite ease-out;
+    z-index: -1; /* Pod ikoną */
+}
