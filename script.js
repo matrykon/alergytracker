@@ -41,8 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
              iconSize: [40, 40]
         });
 
-        // Dodaj pulsujący okrąg jako osobny marker pod głównym markerem
-        L.marker([lat, lon], { icon: pulsingIcon }).addTo(map);
+    
         // Dodaj główny marker użytkownika
         userMarker = L.marker([lat, lon], { icon: userIcon }).addTo(map);
 
