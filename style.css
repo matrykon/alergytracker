@@ -3,7 +3,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f0f0f0;
+    background: linear-gradient(135deg, #e0e7ff 0%, #f0f4f8 100%);
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     overflow: hidden; /* Zapobiega przewijaniu tła */
@@ -12,32 +12,31 @@ body {
 .phone-screen {
     width: 350px;   
     height: 667px;  
-    background-color: #ffffff;
-    border: 10px solid #111; /* Ramka telefonu */
+    background: linear-gradient(120deg, #fff 80%, #e3eaff 100%);
+    border: 10px solid #222;
     border-radius: 40px;     /* Zaokrąglone rogi */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    position: relative;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.18), 0 1.5px 0 #fff inset;
+    transition: box-shadow 0.3s;
+    position: relative; /* Ważne dla pozycjonowania .permission-overlay */
     overflow: hidden; /* Ukrywa elementy wystające poza ekran */
     display: flex;
     flex-direction: column;
 }
 
 .status-bar {
-    height: 30px; /* Wysokość paska statusu */
-    background-color: #f8f8f8; /* Jasny kolor tła paska */
-    border-bottom: 1px solid #ddd;
+    height: 30px;
+    background: rgba(255,255,255,0.95);
+    border-bottom: 1.5px solid #cfd8dc;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 15px; /* Odstępy wewnątrz paska */
+    padding: 0 15px;
     font-size: 0.8em;
     font-weight: 500;
-    z-index: 10; /* Pasek statusu zawsze na wierzchu */
-    box-sizing: border-box; /* Padding wliczony w wysokość */
-    position: absolute; /* Utrzymanie na górze, nawet jeśli content się przewija */
-    top: 0;
-    left: 0;
-    width: 100%;
+    z-index: 10;
+    box-sizing: border-box;
+    flex-shrink: 0; /* Zapobiega kurczeniu się paska statusu */
 }
 
 .status-bar .time {
@@ -49,35 +48,39 @@ body {
 }
 
 .content {
-    flex-grow: 1; /* Zajmuje pozostałą przestrzeń */
-    position: relative; /* Dla pozycjonowania absolutnego #info */
-    margin-top: 30px; /* Zostawia miejsce na status-bar */
-    margin-bottom: 20px; /* Zostawia miejsce na home-indicator */
-    background-color: #e8e8e8; /* Tło pod mapą na wypadek opóźnienia */
+    flex-grow: 1;
+    position: relative;
+    background-color: #e8e8e8;
+    overflow-x: hidden; /* Dodaj to! */
+    overflow-y: hidden; /* Zostaw, jeśli nie chcesz scrolla poziomego */
+    display: flex;
+    flex-direction: column;
 }
 
 .home-indicator {
     height: 5px;
     width: 135px;
-    background-color: #aaa; /* Szary wskaźnik */
-    border-radius: 2.5px;
-    position: absolute;
-    bottom: 8px; /* Odstęp od dołu */
-    left: 50%;
-    transform: translateX(-50%); /* Wycentrowanie */
-    z-index: 10;
+    background: linear-gradient(90deg, #bbb 0%, #eee 100%);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    margin: 0 auto 8px auto; /* Wycentrowanie i odstęp od dołu */
+    flex-shrink: 0; /* Zapobiega kurczeniu się wskaźnika */
 }
 
 /* Styl dla markera użytkownika */
 .user-marker-icon {
     background-color: #007aff; /* Niebieski kolor */
-    border: 2px solid white;
+    border: 2.5px solid #fff;
     border-radius: 50%;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 4px rgba(0,123,255,0.15), 0 2px 8px rgba(0,0,0,0.12);
     width: 12px !important;
     height: 12px !important;
     margin-left: -6px !important; /* Centrowanie */
     margin-top: -6px !important; /* Centrowanie */
+    transition: box-shadow 0.2s;
+}
+
+.user-marker-icon:hover {
+    box-shadow: 0 0 0 8px rgba(0,123,255,0.18), 0 4px 16px rgba(0,0,0,0.16);
 }
 
 /* Animacja pulsowania dla markera użytkownika */
@@ -89,13 +92,215 @@ body {
 
 .pulsing-marker {
     border-radius: 50%;
-    border: 10px solid rgba(0, 122, 255, 0.5); /* Przezroczysty niebieski */
+    border: 10px solid rgba(0, 122, 255, 0.35);
     box-sizing: border-box;
     position: absolute;
     width: 40px !important; /* Rozmiar pulsującego okręgu */
     height: 40px !important;
     margin-left: -20px !important; /* Centrowanie */
     margin-top: -20px !important; /* Centrowanie */
-    animation: pulse 1.5s infinite ease-out;
+    animation: pulse 1.5s infinite cubic-bezier(.66,0,0,1);
     z-index: -1; /* Pod ikoną */
+}
+
+/* Style dla ekranów profili - przeniesione do <style> w HTML dla przejrzystości tego przykładu,
+   ale można je umieścić tutaj */
+
+/* Przyciski aplikacji */
+.app-button, .profile-button, .btn {
+    transition: background 0.18s, box-shadow 0.18s, color 0.18s;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.06);
+    font-size: 1em;
+    letter-spacing: 0.02em;
+}
+
+.app-button-primary, .btn-allow {
+    background: linear-gradient(90deg, #007bff 60%, #4f8cff 100%);
+}
+.app-button-primary:hover, .btn-allow:hover {
+    background: linear-gradient(90deg, #0056b3 60%, #3578e5 100%);
+}
+
+.app-button-success {
+    background: linear-gradient(90deg, #28a745 60%, #5be584 100%);
+}
+.app-button-success:hover {
+    background: linear-gradient(90deg, #218838 60%, #43d67c 100%);
+}
+
+.app-button-secondary, .btn-deny {
+    background: linear-gradient(90deg, #6c757d 60%, #aeb4ba 100%);
+}
+.app-button-secondary:hover, .btn-deny:hover {
+    background: linear-gradient(90deg, #495057 60%, #868e96 100%);
+}
+
+.profile-button {
+    background: #f8faff;
+    border: 1.5px solid #dbeafe;
+    color: #222;
+    font-weight: 500;
+    border-radius: 7px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.profile-button:hover {
+    background: #e0e7ff;
+    border-color: #b6d0fe;
+    color: #007bff;
+}
+
+/* Pola formularza */
+#profileForm input[type="text"] {
+    background: #f7faff;
+    border: 1.5px solid #b6d0fe;
+    transition: border 0.18s;
+}
+#profileForm input[type="text"]:focus {
+    border: 1.5px solid #007bff;
+    outline: none;
+    background: #e0e7ff;
+}
+
+/* Overlay zgody na lokalizację */
+.permission-overlay {
+    background: rgba(30, 41, 59, 0.82);
+    backdrop-filter: blur(2px);
+}
+.permission-box {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+    border: 1.5px solid #e0e7ff;
+}
+
+/* Info box na mapie */
+#info {
+    background: rgba(255,255,255,0.93);
+    border: 1.5px solid #b6d0fe;
+    color: #222;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.08);
+    transition: background 0.2s, color 0.2s;
+}
+
+/* Subtelne animacje ekranów */
+.screen {
+    animation: fadeInScreen 0.5s;
+}
+@keyframes fadeInScreen {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+
+/* Popupy Leaflet */
+.leaflet-popup-content-wrapper {
+    background: linear-gradient(120deg, #fff 80%, #e0eaff 100%);
+    border: 1.5px solid #b6d0fe;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.08);
+}
+.leaflet-popup-content {
+    color: #222;
+    font-weight: 500;
+}
+
+/* --- UPIĘKSZENIE FORMULARZA TWORZENIA PROFILU --- */
+#profileForm {
+    background: rgba(255,255,255,0.97);
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,123,255,0.08), 0 1.5px 0 #e0eaff inset;
+    padding: 22px 10px 18px 10px; /* Zmniejsz padding boczny */
+    margin: 0 auto 18px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1.5px solid #e0eaff;
+    width: 100%;           /* Dodaj to! */
+    max-width: 100%;       /* Dodaj to! */
+    box-sizing: border-box;/* Dodaj to! */
+}
+
+#profileForm label {
+    font-size: 1em;
+    color: #2a2a2a;
+    margin-bottom: 4px;
+    margin-top: 8px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+#profileForm input[type="text"],
+#profileForm input[type="number"],
+#profileForm select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #b6d0fe;
+    border-radius: 7px;
+    background: #f7faff;
+    font-size: 1em;
+    margin-bottom: 8px;
+    transition: border 0.18s, box-shadow 0.18s;
+    box-sizing: border-box;
+}
+#profileForm input[type="text"]:focus,
+#profileForm input[type="number"]:focus,
+#profileForm select:focus {
+    border: 1.5px solid #007bff;
+    background: #e0e7ff;
+    outline: none;
+    box-shadow: 0 0 0 2px #b6d0fe33;
+}
+
+#allergenCheckboxes {
+    background: #f3f7ff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    border: 1px solid #e0eaff;
+    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+}
+#allergenCheckboxes label {
+    font-weight: 500;
+    font-size: 0.98em;
+    color: #3a3a3a;
+    margin-bottom: 0;
+    margin-right: 8px;
+    background: #e7f0ff;
+    border-radius: 6px;
+    padding: 4px 10px 4px 6px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+#allergenCheckboxes label:hover {
+    background: #d0e7ff;
+}
+#allergenCheckboxes input[type="checkbox"] {
+    accent-color: #007bff;
+    margin-right: 5px;
+}
+
+#profileForm input[type="checkbox"]#profileNotifications {
+    accent-color: #28a745;
+    margin-right: 7px;
+    transform: scale(1.15);
+}
+
+#profileForm button[type="submit"] {
+    margin-top: 18px;
+    font-size: 1.08em;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(40,167,69,0.07);
+}
+
+#profileForm select {
+    cursor: pointer;
+}
+
+@media (max-width: 400px) {
+    #profileForm {
+        padding: 14px 4vw;
+    }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mapa Zanieczyszczeń</title>
+    <title>Mapa Zanieczyszczeń i Pylenia</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
@@ -11,40 +11,38 @@
     <style>
         /* Dodatkowe style dla mapy wewnątrz kontenera */
         #map {
-            height: 100%; /* Mapa zajmuje całą dostępną wysokość kontenera */
+            height: 100%;
             width: 100%;
-            z-index: 1; /* Mapa pod spodem */
+            z-index: 1;
         }
         #info {
             position: absolute;
-            bottom: 50px; /* Nad dolną krawędzią "telefonu" */
+            bottom: 10px; /* Zmniejszony odstęp od dołu mapScreen */
             left: 10px;
             right: 10px;
             background-color: rgba(255, 255, 255, 0.85);
             padding: 8px;
             border-radius: 5px;
             font-size: 0.8em;
-            z-index: 2; /* Info nad mapą */
+            z-index: 2;
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            max-height: 100px; /* Ograniczenie wysokości */
-            overflow-y: auto; /* Przewijanie, jeśli tekst jest za długi */
+            max-height: 100px;
+            overflow-y: auto;
         }
-        /* Ukrywanie domyślnego popupa Leaflet dla lepszej integracji */
         .leaflet-popup-content-wrapper {
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 5px;
         }
         .leaflet-popup-tip-container {
-            visibility: hidden; /* Ukrycie strzałki popupa */
+            visibility: hidden;
         }
         .leaflet-popup-content {
-             margin: 10px !important; /* Ważne, aby nadpisać style Leaflet */
+             margin: 10px !important;
              font-size: 0.9em;
              line-height: 1.4;
         }
         
-        /* Style dla okna prośby o pozwolenie na lokalizację */
         .permission-overlay {
             position: absolute;
             top: 0;
@@ -55,7 +53,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 1000; /* Musi być na wierzchu */
         }
         
         .permission-box {
@@ -75,17 +73,18 @@
         
         .permission-buttons {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around; /* Zmienione na space-around dla lepszego wyglądu */
             margin-top: 20px;
         }
         
         .btn {
-            padding: 10px 20px;
+            padding: 10px 15px; /* Zmniejszony padding dla przycisków w permission-box */
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            flex-basis: 45%;
+            /* flex-basis: 45%; Usunięte, szerokość będzie zarządzana inaczej */
+            min-width: 100px; /* Minimalna szerokość przycisku */
         }
         
         .btn-allow {
@@ -97,6 +96,84 @@
             background-color: #f44336;
             color: white;
         }
+
+        /* Style dla ekranów profili */
+        .screen {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Wyśrodkowanie zawartości w pionie */
+            /* justify-content: center; Wyśrodkowanie zawartości w poziomie */
+        }
+
+        #profileSelectionScreen h2, #createProfileScreen h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #existingProfilesList .profile-button {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 280px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: left;
+        }
+        #existingProfilesList .profile-button:hover {
+            background-color: #e0e0e0;
+        }
+
+        #profileForm label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-align: left;
+            width: 100%;
+            max-width: 280px;
+        }
+        #profileForm input[type="text"] {
+            width: 100%;
+            max-width: 280px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .app-button { /* Ogólna klasa dla przycisków aplikacji */
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            width: 100%;
+            max-width: 280px;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+        .app-button-primary {
+            background-color: #007bff;
+        }
+        .app-button-secondary {
+            background-color: #6c757d;
+        }
+        .app-button-success {
+            background-color: #28a745;
+        }
+
+        #mapScreen {
+            padding: 0; /* MapScreen nie potrzebuje paddingu, bo mapa zajmuje całość */
+            position: relative; /* Dla pozycjonowania #info */
+        }
     </style>
 </head>
 <body>
@@ -104,13 +181,81 @@
         <div class="status-bar">
             <span class="time"></span> <span class="icons">📶🔋</span>
         </div>
+
         <div class="content">
-            <div id="map"></div>
-            <div id="info">Uruchamianie aplikacji...</div>
+            <!-- Profile Selection Screen -->
+            <div id="profileSelectionScreen" class="screen" style="display: none;">
+                <h2>Wybierz Profil</h2>
+                <div id="existingProfilesList" style="width: 100%; max-width: 280px; margin-bottom: 20px;">
+                    <!-- Lista profili będzie tutaj generowana przez JS -->
+                </div>
+                <button id="btnGoToCreateProfile" class="app-button app-button-primary">Utwórz Nowy Profil</button>
+            </div>
+
+            <!-- Create Profile Screen -->
+            <div id="createProfileScreen" class="screen" style="display: none;">
+                <h2>Utwórz Nowy Profil</h2>
+                <form id="profileForm">
+                    <label for="profileName">Nazwa Profilu:</label>
+                    <input type="text" id="profileName" name="profileName" required>
+
+                    <label for="profileFirstName">Imię (opcjonalnie):</label>
+                    <input type="text" id="profileFirstName" name="profileFirstName">
+
+                    <label for="profileAge">Wiek (opcjonalnie):</label>
+                    <input type="number" id="profileAge" name="profileAge" min="1" max="120">
+
+                    <label>Alergeny, które Cię interesują:</label>
+                    <div id="allergenCheckboxes">
+                        <label><input type="checkbox" name="allergens" value="Brzoza"> Brzoza</label>
+                        <label><input type="checkbox" name="allergens" value="Trawy"> Trawy</label>
+                        <label><input type="checkbox" name="allergens" value="Ambrozja"> Ambrozja</label>
+                        <label><input type="checkbox" name="allergens" value="Olcha"> Olcha</label>
+                        <label><input type="checkbox" name="allergens" value="Topola"> Topola</label>
+                        <label><input type="checkbox" name="allergens" value="Leszczyna"> Leszczyna</label>
+                        <label><input type="checkbox" name="allergens" value="Bylica"> Bylica</label>
+                        <label><input type="checkbox" name="allergens" value="Inne"> Inne</label>
+                    </div>
+
+                    <label style="display: flex; align-items: center; gap: 7px; font-weight: 500;">
+                        <input type="checkbox" id="profileNotifications" name="profileNotifications">
+                        Chcę otrzymywać powiadomienia o pyleniu i jakości powietrza
+                    </label>
+
+                    <label for="profileNotifyType">Preferowany sposób powiadomień:</label>
+                    <select id="profileNotifyType" name="profileNotifyType">
+                        <option value="push">Powiadomienia w aplikacji</option>
+                        <option value="email">E-mail</option>
+                        <option value="sms">SMS</option>
+                    </select>
+
+                    <button type="submit" class="app-button app-button-success">Zapisz Profil i Pokaż Mapę</button>
+                </form>
+                <button id="btnBackToSelection" class="app-button app-button-secondary" style="display: none;">Wróć do Wyboru Profili</button>
+            </div>
+
+            <!-- Map Screen -->
+                        <!-- Map Screen -->
+            <div id="mapScreen" class="screen" style="display: none;">
+                <button id="btnBackToProfilesFromMap" class="app-button app-button-secondary" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1001; width: auto; padding: 8px 15px; font-size: 0.9em;">Wybierz Inny Profil</button>
+                <div id="map"></div>
+                <div id="info">Uruchamianie aplikacji...</div>
+            </div>
+            
+            <!-- Profile Preview Screen -->
+            <div id="profilePreviewScreen" class="screen" style="display: none;">
+                <h2>Twój Profil</h2>
+                <div id="profilePreviewData" style="width:100%;max-width:320px;background:#fff;border-radius:14px;box-shadow:0 2px 8px #b6d0fe33;padding:18px 14px;margin-bottom:18px;"></div>
+                <button id="btnShowMapFromPreview" class="app-button app-button-success">Pokaż Mapę</button>
+                <button id="btnBackToSelectionFromPreview" class="app-button app-button-secondary" style="margin-top:8px;">Wróć</button>
+            </div>
+            
+            <!-- Uwaga: .permission-overlay będzie dodawany dynamicznie do .phone-screen przez JS -->
         </div>
+
         <div class="home-indicator"></div>
     </div>
-
+    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
