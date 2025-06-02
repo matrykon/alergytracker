@@ -2,30 +2,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeSpan = document.querySelector('.status-bar .time');
     const contentDiv = document.querySelector('.content');
     const phoneScreenDiv = document.querySelector('.phone-screen');
-
-    // Elementy ekranów
     const profileSelectionScreen = document.getElementById('profileSelectionScreen');
     const createProfileScreen = document.getElementById('createProfileScreen');
     const mapScreen = document.getElementById('mapScreen');
     const profilePreviewScreen = document.getElementById('profilePreviewScreen');
-    
     const existingProfilesListDiv = document.getElementById('existingProfilesList');
     const btnGoToCreateProfile = document.getElementById('btnGoToCreateProfile');
     const profileForm = document.getElementById('profileForm');
     const profileNameInput = document.getElementById('profileName');
     const btnBackToSelection = document.getElementById('btnBackToSelection');
-    const btnBackToProfilesFromMap = document.getElementById('btnBackToProfilesFromMap'); // <-- NOWY PRZYCISK
+    const btnBackToProfilesFromMap = document.getElementById('btnBackToProfilesFromMap');
     const btnShowMapFromPreview = document.getElementById('btnShowMapFromPreview');
     const btnBackToSelectionFromPreview = document.getElementById('btnBackToSelectionFromPreview');
-
     const infoDiv = document.getElementById('info');
     const mapContainer = document.getElementById('map');
     const profilePreviewData = document.getElementById('profilePreviewData');
-
     let map;
     let userMarker;
     let currentProfile = null;
-
     const PROFILES_STORAGE_KEY = 'airQualityAppProfiles';
     const ACTIVE_PROFILE_ID_KEY = 'airQualityActiveProfileId';
 
@@ -42,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (profileId) {
             localStorage.setItem(ACTIVE_PROFILE_ID_KEY, profileId);
         } else {
-            localStorage.removeItem(ACTIVE_PROFILE_ID_KEY); // Usuń, jeśli null
+            localStorage.removeItem(ACTIVE_PROFILE_ID_KEY);
         }
     }
 
@@ -74,23 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Przełączanie Ekranów ---
     function showScreen(screenElement) {
         profileSelectionScreen.style.display = 'none';
         createProfileScreen.style.display = 'none';
         mapScreen.style.display = 'none';
         profilePreviewScreen.style.display = 'none';
-        
-        // Domyślnie ukryj przycisk powrotu z mapy
         btnBackToProfilesFromMap.style.display = 'none';
-
         if (screenElement) {
             screenElement.style.display = 'flex';
             if (screenElement === mapScreen) {
-                // Pokaż przycisk "Wybierz Inny Profil" tylko na ekranie mapy
-                // i tylko jeśli są jakiekolwiek profile do wyboru
                 const profiles = getProfilesFromStorage();
-                if (profiles.length > 0) { // Pokaż tylko jeśli jest do czego wracać
+                if (profiles.length > 0) {
                      btnBackToProfilesFromMap.style.display = 'block';
                 }
             }
@@ -99,8 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayProfileSelectionScreen() {
         const profiles = getProfilesFromStorage();
-        existingProfilesListDiv.innerHTML = ''; 
-
+        existingProfilesListDiv.innerHTML = '';
         if (profiles.length > 0) {
             profiles.forEach(profile => {
                 const button = document.createElement('button');
@@ -115,10 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } else {
             existingProfilesListDiv.innerHTML = '<p>Brak zapisanych profili. Utwórz nowy.</p>';
-            // Jeśli nie ma profili, od razu przejdź do tworzenia nowego
-            // To zapobiega pustemu ekranowi wyboru
-            setTimeout(displayCreateProfileScreen, 0); // setTimeout aby uniknąć problemów z renderowaniem
-            return; // Zakończ, bo przechodzimy do innego ekranu
+            setTimeout(displayCreateProfileScreen, 0);
+            return;
         }
         showScreen(profileSelectionScreen);
     }
@@ -135,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function navigateToMapScreen() {
-        showScreen(mapScreen); // To teraz ustawi widoczność btnBackToProfilesFromMap
+        showScreen(mapScreen);
         if (currentProfile && currentProfile.location) {
             initializeMap(currentProfile.location.lat, currentProfile.location.lon);
         } else {
@@ -144,44 +129,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Inicjalizacja Mapy i Geolokalizacja ---
     function initializeMap(lat, lon) {
         try {
             if (map) {
                 map.remove();
-                map = null; // Ważne, aby można było ją poprawnie reinicjalizować
+                map = null;
             }
             map = L.map(mapContainer).setView([lat, lon], 13);
-
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
-
             const userIcon = L.divIcon({
                 className: 'user-marker-icon',
                 iconSize: [12, 12]
             });
             userMarker = L.marker([lat, lon], { icon: userIcon }).addTo(map);
-
             infoDiv.textContent = 'Pobieranie danych o jakości powietrza...';
             fetchAirQuality(lat, lon);
-
             if (currentProfile) {
                 updateProfileLocation(currentProfile.id, lat, lon);
             }
-
         } catch (error) {
             console.error('Błąd podczas inicjalizacji mapy:', error);
             displayError('Wystąpił błąd podczas inicjalizacji mapy.');
         }
     }
 
-    // ... (reszta funkcji fetchAirQuality, displayAirQualityData, showLocationPermissionRequest, requestGeolocation, handleLocationDenied, displayError, updateTime bez zmian) ...
     function fetchAirQuality(lat, lon) {
-        const apiKey = '4977ab2b228203034413968034a0aa41'; // Klucz API
+        const apiKey = '4977ab2b228203034413968034a0aa41';
         const apiUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
-
         fetch(apiUrl)
             .then(response => {
                 if (!response.ok) throw new Error(`Błąd API: ${response.status}`);
@@ -212,9 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 5: aqiText = 'Bardzo zła'; break;
             default: aqiText = 'Nieznana';
         }
-
         infoDiv.innerHTML = `<b>Jakość powietrza: ${aqiText} (AQI: ${aqi})</b><br>Kliknij marker po szczegóły.`;
-
         const popupContent = `
             <b>Jakość Powietrza (AQI: ${aqi} - ${aqiText})</b><hr>
             <b>Składniki (μg/m³):</b><br>
@@ -226,7 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
             CO: ${components.co ? (components.co / 1000).toFixed(2) + ' mg/m³' : 'N/A'}*<hr>
             <small>Lokalizacja: ${lat.toFixed(4)}, ${lon.toFixed(4)}</small><br>
             <small>* Jednostka CO to mg/m³</small>`;
-        
         if (userMarker) {
             userMarker.bindPopup(popupContent).openPopup();
         }
@@ -235,7 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function showLocationPermissionRequest() {
         const existingOverlay = document.querySelector('.permission-overlay');
         if (existingOverlay) existingOverlay.remove();
-
         const permissionOverlay = document.createElement('div');
         permissionOverlay.className = 'permission-overlay';
         permissionOverlay.innerHTML = `
@@ -247,14 +220,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button id="allowLocation" class="btn btn-allow">Zezwól</button>
                 </div>
             </div>`;
-        
         phoneScreenDiv.appendChild(permissionOverlay);
-        
         document.getElementById('allowLocation').addEventListener('click', () => {
             permissionOverlay.remove();
             requestGeolocation();
         });
-        
         document.getElementById('denyLocation').addEventListener('click', () => {
             permissionOverlay.remove();
             handleLocationDenied();
@@ -312,54 +282,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (timeSpan) timeSpan.textContent = `${hours}:${minutes}`;
     }
 
-    // --- Inicjalizacja Aplikacji ---
     function appInit() {
         updateTime();
         setInterval(updateTime, 30000);
-
         btnGoToCreateProfile.addEventListener('click', displayCreateProfileScreen);
         btnBackToSelection.addEventListener('click', displayProfileSelectionScreen);
-
-        // NOWY Event Listener dla przycisku powrotu z mapy
         btnBackToProfilesFromMap.addEventListener('click', () => {
             if (map) {
-                map.remove(); // Usuń instancję mapy
-                map = null;   // Wyzeruj zmienną mapy, aby mogła być poprawnie utworzona ponownie
+                map.remove();
+                map = null;
             }
-            currentProfile = null; // Wyzeruj aktualny profil
-            setActiveProfileIdInStorage(null); // Usuń aktywny profil z localStorage
-            displayProfileSelectionScreen(); // Pokaż ekran wyboru profili
+            currentProfile = null;
+            setActiveProfileIdInStorage(null);
+            displayProfileSelectionScreen();
         });
-
         btnBackToSelectionFromPreview.addEventListener('click', () => {
             displayProfileSelectionScreen();
         });
-
         btnShowMapFromPreview.addEventListener('click', () => {
             navigateToMapScreen();
         });
-
         profileForm.addEventListener('submit', (e) => {
             e.preventDefault();
-
             const name = document.getElementById('profileName').value.trim();
             const firstName = document.getElementById('profileFirstName').value.trim();
             const age = document.getElementById('profileAge').value.trim();
-
-            // Pobierz wybrane alergeny
             const allergenCheckboxes = document.querySelectorAll('#allergenCheckboxes input[type="checkbox"]:checked');
             const allergens = Array.from(allergenCheckboxes).map(cb => cb.value);
-
-            // Powiadomienia
             const notifications = document.getElementById('profileNotifications').checked;
             const notifyType = document.getElementById('profileNotifyType').value;
-
             if (!name) {
                 alert('Podaj nazwę profilu!');
                 return;
             }
-
-            // Tworzenie nowego profilu z dodatkowymi danymi
             const profiles = getProfilesFromStorage();
             const newProfile = {
                 id: Date.now().toString(),
@@ -377,10 +332,8 @@ document.addEventListener('DOMContentLoaded', () => {
             currentProfile = newProfile;
             navigateToMapScreen();
         });
-
         const profiles = getProfilesFromStorage();
         const activeId = getActiveProfileIdFromStorage();
-        
         if (activeId) {
             const foundProfile = profiles.find(p => p.id === activeId);
             if (foundProfile) {
@@ -388,21 +341,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 navigateToMapScreen();
                 return;
             } else {
-                // Jeśli aktywny ID jest w storage, ale nie ma takiego profilu (np. usunięty ręcznie)
-                setActiveProfileIdInStorage(null); // Wyczyść nieprawidłowy ID
+                setActiveProfileIdInStorage(null);
             }
         }
-        
-        // Jeśli nie było aktywnego profilu, lub był nieprawidłowy
-        displayProfileSelectionScreen(); // Domyślnie zaczynamy od wyboru profilu
-                                         // displayProfileSelectionScreen samo zdecyduje, czy pokazać listę,
-                                         // czy przekierować do tworzenia, jeśli lista jest pusta.
+        displayProfileSelectionScreen();
     }
 
     appInit();
 
     function displayProfilePreviewScreen(profile) {
-        // Tworzenie czytelnego podglądu
         profilePreviewData.innerHTML = `
             <b>Nazwa profilu:</b> ${profile.name}<br>
             <b>Imię:</b> ${profile.firstName ? profile.firstName : '-'}<br>
